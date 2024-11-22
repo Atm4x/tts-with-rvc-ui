@@ -300,6 +300,23 @@
                         {% endfor %}
                     </select>
                 </div>
+                <div class="input-group">
+                    <label for="index-select">Select Index:</label>
+                    <select name="index_path" id="index-select">
+                        <option value="">No index</option>
+                        {% for index in indices %}
+                            <option value="{{ index }}">{{ index }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="index-rate-tts">Index Rate:</label>
+                    <input type="range" id="index-rate-tts" name="index_rate" 
+                           min="0" max="1" step="0.01" value="0.75">
+                    <span id="index-rate-value-tts">0.75</span>
+                </div>
+
                 <textarea name="text" rows="4" placeholder="Enter your text here..." required></textarea>
                 <div class="input-group">
                     <label for="tts-pitch">Pitch adjustment:</label>
@@ -321,6 +338,24 @@
                         {% endfor %}
                     </select>
                 </div>
+
+                <div class="input-group">
+                    <label for="index-select">Select Index:</label>
+                    <select name="index_path" id="index-select">
+                        <option value="">No index</option>
+                        {% for index in indices %}
+                            <option value="{{ index }}">{{ index }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="index-rate-audio">Index Rate:</label>
+                    <input type="range" id="index-rate-audio" name="index_rate" 
+                           min="0" max="1" step="0.01" value="0.75">
+                    <span id="index-rate-value-audio">0.75</span>
+                </div>
+
                 <div class="file-upload">
                     <label for="audio-file">Select audio file:</label>
                     <input type="file" id="audio-file" name="audio" accept=".mp3,.wav" required>
@@ -335,6 +370,14 @@
         </div>
 
     <script>
+        document.getElementById('index-rate-tts').addEventListener('input', function() {
+            document.getElementById('index-rate-value-tts').textContent = this.value;
+        });
+
+        document.getElementById('index-rate-audio').addEventListener('input', function() {
+            document.getElementById('index-rate-value-audio').textContent = this.value;
+        });
+
         function showTab(tabName) {
             // Remove active class from all tabs
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));

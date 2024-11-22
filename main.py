@@ -23,11 +23,25 @@ tts.set_voice("ru-RU-DmitryNeural")
 # Создаем папки для временных файлов, если их нет
 os.makedirs("temp", exist_ok=True)
 os.makedirs("uploads", exist_ok=True)
+os.makedirs("models", exist_ok=True)
+os.makedirs("input", exist_ok=True)
+os.makedirs("logs", exist_ok=True)
+
+
+def get_available_indices():
+    indices_dir = "logs"  # или другая папка где хранятся индексы
+    indices = []
+    for file in os.listdir(indices_dir):
+        if file.endswith('.index'):
+            indices.append(file)
+    return indices
 
 @app.route('/')
 def index():
     models = get_available_models()
-    return render_template('index.html', models=models)
+    indices = get_available_indices()
+    return render_template('index.html', models=models, indices=indices)
+
 
 @app.route('/process_tts', methods=['POST'])
 def process_tts():
@@ -35,18 +49,19 @@ def process_tts():
         text = request.form['text']
         pitch = int(request.form['pitch'])
         selected_model = request.form['model']
-        
+        index_path = request.form['index_path']
+        index_rate = float(request.form['index_rate'])
+
         tts.current_model = os.path.join("models", selected_model)
+        if index_path:
+            tts.index_path = os.path.abspath(os.path.join("logs", index_path))
+            print("Index path:", tts.index_path)
         
-        path = asyncio.run(tts.speech(
-            model_path=tts.current_model,
-            input_directory=tts.input_directory,
-            rvc_path=tts.rvc_path,
+        path = tts(
             text=text,
             pitch=pitch,
-            voice=tts.current_voice
-        ))
-        
+            index_rate=index_rate
+        )
         return send_file(path, as_attachment=True)
     except Exception as e:
         return str(e), 500
@@ -55,27 +70,31 @@ def process_tts():
 def process_audio():
     if 'audio' not in request.files:
         return 'No file uploaded', 400
-    
+        
     file = request.files['audio']
     pitch = int(request.form['pitch'])
     selected_model = request.form['model']
+    index_path = request.form['index_path']
+    index_rate = float(request.form['index_rate'])
     
     if file.filename == '':
         return 'No selected file', 400
-    
+        
     tts.current_model = os.path.join("models", selected_model)
+    if index_path:
+        tts.index_path = os.path.abspath(os.path.join("logs", index_path))
+        print("Index path:", tts.index_path)
     
     input_path = os.path.join('uploads', file.filename)
     file.save(input_path)
     
     output_path = tts.speech(
         input_path=input_path,
-        pitch=pitch
+        pitch=pitch,
+        index_rate=index_rate
     )
     
-    # Удаляем входной файл
     os.remove(input_path)
-    
     return send_file(output_path, as_attachment=True)
 
 if __name__ == '__main__':

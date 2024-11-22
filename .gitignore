@@ -4,3 +4,5 @@ models/*
 src
 temp
 *.pt
+uploads/*
+logs/*
